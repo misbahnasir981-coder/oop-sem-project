@@ -1,24 +1,232 @@
-# Compiled class file
-*.class
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-# Log file
-*.log
+// 1. Abstract User Class
+abstract class User {
+    private String id;
+    private String name;
+    private String phoneNumber;
 
-# BlueJ files
-*.ctxt
+    public User(String id, String name, String phoneNumber) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+    }
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+    public String getName() {
+        return name;
+    }
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+    public abstract void showDashboard();
+}
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+// 2. Customer Class
+class Customer extends User {
+    private String deliveryAddress;
+
+    public Customer(String id, String name, String phoneNumber, String deliveryAddress) {
+        super(id, name, phoneNumber);
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    @Override
+    public void showDashboard() {
+        JOptionPane.showMessageDialog(null,
+                "Welcome, " + getName() + "!\nApka profile verify ho gaya hai.");
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+}
+
+// 3. Order Class
+class Order {
+    private String orderId;
+    private Customer customer;
+    private List<String> items;
+    private double totalAmount;
+    private String status;
+
+    public Order(String orderId, Customer customer) {
+        this.orderId = orderId;
+        this.customer = customer;
+        this.items = new ArrayList<>();
+        this.totalAmount = 0.0;
+        this.status = "Pending";
+    }
+
+    public void addItem(String item, double price) {
+        items.add(item);
+        totalAmount += price;
+    }
+
+    public String getReceipt() {
+        return "====================================\n"
+                + "         ORDER RECEIPT\n"
+                + "====================================\n"
+                + "Order ID: " + orderId + "\n"
+                + "Customer Name: " + customer.getName() + "\n"
+                + "Address: " + customer.getDeliveryAddress() + "\n"
+                + "Items Ordered: " + items + "\n"
+                + "Total Bill: Rs. " + totalAmount + "\n"
+                + "Status: " + status + "\n"
+                + "====================================";
+    }
+}
+
+// 4. Main GUI Class
+public class FOODDELIVERYGUI extends JFrame {
+
+    private JTextField nameField, phoneField;
+    private JTextArea addressArea;
+
+    private JCheckBox biryani, burger, pizza, fries, drink;
+
+    private JTextArea outputArea;
+
+    // Default Location
+    private final String DEFAULT_LOCATION = "Islamabad, Pakistan";
+
+    public FOODDELIVERYGUI() {
+
+        setTitle("OOP Food Delivery System");
+        setSize(600, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        setLayout(new BorderLayout());
+
+        // ===== TOP PANEL =====
+        JLabel title = new JLabel("WELCOME TO FOOD DELIVERY", JLabel.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setForeground(Color.WHITE);
+
+        JPanel topPanel = new JPanel();
+        topPanel.setBackground(new Color(34, 40, 49));
+        topPanel.add(title);
+
+        add(topPanel, BorderLayout.NORTH);
+
+        // ===== CENTER PANEL =====
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new GridLayout(12, 1, 10, 10));
+
+        // Customer Details
+        centerPanel.add(new JLabel("Enter Name:"));
+        nameField = new JTextField();
+        centerPanel.add(nameField);
+
+        centerPanel.add(new JLabel("Enter Phone Number:"));
+        phoneField = new JTextField();
+        centerPanel.add(phoneField);
+
+        centerPanel.add(new JLabel("Delivery Address (Default Location Used):"));
+        addressArea = new JTextArea(DEFAULT_LOCATION);
+        centerPanel.add(addressArea);
+
+        // Menu
+        centerPanel.add(new JLabel("Select Food Items:"));
+
+        biryani = new JCheckBox("Chicken Biryani - Rs.350");
+        burger = new JCheckBox("Zinger Burger - Rs.280");
+        pizza = new JCheckBox("Chicken Pizza (S) - Rs.450");
+        fries = new JCheckBox("Fries Large - Rs.150");
+        drink = new JCheckBox("Cold Drink - Rs.80");
+
+        centerPanel.add(biryani);
+        centerPanel.add(burger);
+        centerPanel.add(pizza);
+        centerPanel.add(fries);
+        centerPanel.add(drink);
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        // ===== BOTTOM PANEL =====
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new BorderLayout());
+
+        JButton orderButton = new JButton("PLACE ORDER");
+
+        outputArea = new JTextArea(12, 40);
+        outputArea.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(outputArea);
+
+        bottomPanel.add(orderButton, BorderLayout.NORTH);
+        bottomPanel.add(scrollPane, BorderLayout.CENTER);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // ===== BUTTON ACTION =====
+        orderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String name = nameField.getText();
+                String phone = phoneField.getText();
+                String address = addressArea.getText();
+
+                // Customer Object
+                Customer customer = new Customer(
+                        "C001",
+                        name,
+                        phone,
+                        address
+                );
+
+                customer.showDashboard();
+
+                // Order Object
+                Order order = new Order(
+                        "ORD-" + (int)(Math.random() * 9000 + 1000),
+                        customer
+                );
+
+                // Add Selected Items
+                if (biryani.isSelected()) {
+                    order.addItem("Chicken Biryani", 350);
+                }
+
+                if (burger.isSelected()) {
+                    order.addItem("Zinger Burger", 280);
+                }
+
+                if (pizza.isSelected()) {
+                    order.addItem("Chicken Pizza", 450);
+                }
+
+                if (fries.isSelected()) {
+                    order.addItem("Fries Large", 150);
+                }
+
+                if (drink.isSelected()) {
+                    order.addItem("Cold Drink", 80);
+                }
+
+                // Show Receipt
+                outputArea.setText(order.getReceipt());
+
+                JOptionPane.showMessageDialog(null,
+                        "🎉 Order Successfully Placed!");
+            }
+        });
+    }
+
+    // Main Method
+    public static void main(String[] args) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new FOODDELIVERYGUI().setVisible(true);
+            }
+        });
+    }
+}
